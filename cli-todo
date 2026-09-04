@@ -1,0 +1,109 @@
+#cli todo list
+
+import sqlite3 as sql
+
+
+class DBMS:
+    def __init__(self, db = "data.db"):
+        self.conn = sql.connect(db)
+        self.cursor = self.conn.cursor()
+        self.create_table()
+
+    def create_table(self):
+        """this will create 1 table to store all tasks, autoincrement primary key
+        [id , task , priority , time entered]"""
+
+        self.cursor.execute("""
+            CREATE TABLE IF NOT EXISTS TASKS(
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                task TEXT NOT NULL,
+                priority TEXT NOT NULL,
+                date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                is_done INTEGER NOT NULL
+            )
+
+        """)
+        self.conn.commit()
+
+    def view(self):
+        """get all of the entries in the tabel"""
+
+        print("getting all entries")
+
+        self.cursor.execute(""" SELECT * FROM TASKS""")
+        rows = self.cursor.fetchall()
+
+        for row in rows:
+            print(row)
+
+    def edit(self):
+        pass
+
+
+    
+
+class Task:
+    def __init__(self):
+        self.database = DBMS()
+
+        self.options = {
+            1:"view",
+            2:"edit",
+            3:"exit"
+        }
+        self.funcs = {
+            1:self.view,
+            2:self.edit,
+            3:self.exit
+        }
+
+
+    def view(self):
+        self.database.view()
+        ent = str(input("enter 'exit' to close the application"))
+        if ent.lower() == "exit":
+            exit
+        else:
+            self.eventloop()
+            
+
+    def edit(self):
+        """editing tasks, includes adding new, or updating old"""
+        print("editing")
+        
+        
+
+        pass
+    def exit(self):
+        pass
+    
+    def eventloop(self):
+        self.database.create_table()
+
+        print("---CLI todolist---")
+
+        #input validation condition
+        satis = False
+
+        while not satis:
+            for x in self.options:
+               print(f"[{x}]:{self.options[x]}")
+
+            try:
+                option = int(input("select an option by entering the number"))
+
+                if option in self.options:
+                    satis = True
+                    self.funcs[option]()
+                else:
+                    print("enter a number within that corresponds to a choice")
+                    pass
+            except ValueError:
+                print("enter a number")
+            
+            
+        
+
+if __name__ == "__main__":
+    app = Task()
+    app.eventloop()
