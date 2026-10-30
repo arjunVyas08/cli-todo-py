@@ -2,4 +2,4 @@
 
 the functionality is fully implemented as of now
 
-however a few bugs remain
+Please note that the User Experience wasn't a key consideration as this was just a learning execercise
