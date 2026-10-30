@@ -35,7 +35,7 @@ class DBMS:
                 task TEXT NOT NULL,
                 priority TEXT NOT NULL,
                 date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                is_done INTEGER NOT NULL
+                is_done INTEGER NOT NULL DEFAULT 0
             )
         """)
         self.conn.commit()

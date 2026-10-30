@@ -2,7 +2,7 @@
 
 import sqlite3 as sql
 from dbms import DBMS
-
+import sys
 
 class Task:
     def __init__(self):
@@ -16,7 +16,7 @@ class Task:
         self.funcs = {
             1:self.view,
             2:self.edit,
-            3:self.exit
+            3:self.safe_exit
         }
 
         self.active = True
@@ -25,7 +25,8 @@ class Task:
         ent = str(input("enter 'exit' to close the application: "))
         if ent.lower() == "exit":
             self.active = False
-            exit()  
+
+            self.safe_exit()  
         else:
             pass
     
@@ -53,67 +54,61 @@ class Task:
         for x in choices:
             print(f"[{x}]:{choices[x]}")
 
-        satis = False
-        
-        while not satis:
+
+        while True:
             try:
                 option = int(input("select an option by entering the number: "))
-
-                try:
-                    funcs[option]()
-                    satis = True
-                except KeyError:
-                    print("index doesnt exist")
-                
-
             except ValueError:
                 print("enter a number")
+                continue
 
+            if option in funcs:
+                funcs[option]()
+                break
+
+            print("index doesnt exist")
 
         self.after()
 
     def create(self):
-        print("creating new task")
+        while True:
 
-        task_name = str(input("enter the name of the task: "))
-        satis = False
-        cycles = 0
-
-        while not satis:
-
-            if cycles == 2:
-                satis = True
-            
-            priority = str(input("enter the priority of the task,H(igh),M(edium) or L(ow): "))
+            print("creating new task")
+            task_name = str(input("enter the name of the task: "))
+      
+            priority = str(input("enter the priority of the task,H(igh),M(edium) or L(ow):\n\r "))
 
             if priority.upper() == "H" or priority.upper() == "M" or priority.upper() == "L":
-                satis = True
                 self.database.create(task_name,priority.upper())
+                return
             else:
-                cycles += 1
-            
-        pass
+                confirm = str(input("no valid input detected do you want to continue Y/N: ")).lower()
+                if confirm == "n":  
+                    print("Returning...")
+                    return
+
+                    
+       
     def delete(self):
 
         try:
-            targ = int(input("enter the id of the task you want to delete"))
+            targ = int(input("enter the id of the task you want to delete: \n\r"))
 
         except ValueError:
             print("enter a valid integer")
             return
-
-
         row = self.database.get_row(targ)#
 
         if row == None:
-            print(f"No row with index: {targ}")
-            self.after()
+            print(f"No row with index: {targ}\n Returning...")
+            return
         else:
             print(f"DELETING: \n{row}")
             confirm = str(input("Is this correct Y/N: ")).lower()
 
             if confirm == "n":
-                self.after()
+                print("Returning...")
+                return
             elif confirm == "y":
                 self.database.delete(targ)
             else:
@@ -135,50 +130,45 @@ class Task:
         #data base returns None if the index doesnt exist
         if row == None:
             print(f"No row with index: {targ}")
-            self.after()
+            return
         else:
             print(f"editing:{row}")
             confirm = str(input("Is this correct Y/N: ")).lower()
 
-            confirm = ""
-            while confirm not in ("y", "n"):
-                if confirm == "y":
+            
+            if confirm == "y":
 
-                    print("select a field to edit")
-                    for x in self.database.mut_fields:
-                        print(f"[{x}]: {self.database.mut_fields[x]}")
+                print("select a field to edit")
+                for x in self.database.mut_fields:
+                    print(f"[{x}]: {self.database.mut_fields[x]}")
 
-                    try:
-                        field = int(input("enter the field to be changed:\r\n "))
-                        valid = self.database.valid(field)
-                        if valid == True:
+                try:
+                    field = int(input("enter the field to be changed:\r\n "))
+                    valid = self.database.valid(field)
+                    if valid == True:
 
-                            # now to actually edit the task in question
-                            self.database.mut_fns[field](targ)
-                        
-                        else:
-                            print("enter a valid field")
+                        # now to actually edit the task in question
+                        self.database.mut_fns[field](targ)
+                        return
+                    else:
+                        print("enter a valid field")
 
                 
-                    except ValueError:
-                        print("Enter a valid int within the specified range")
-                    
-
-                    
-
-                    pass
-                elif confirm == "n":
+                except ValueError:
+                    print("Enter a valid int within the specified range")
                     return
-                else:
-                    print("invalid input")
+                    
+            elif confirm == "n":
+                return
+            else:
+                print("invalid input\n\r Returning...")
+                return
     
                     
 
        
     
     def eventloop(self):
-        self.database.create_table()
-
         print("---CLI todolist---")
 
 
@@ -205,9 +195,9 @@ class Task:
 
                 
             
-    def exit(self):
+    def safe_exit(self):
         self.database.close_conn()
-        quit()
+        sys.exit(0)
 
 if __name__ == "__main__":
     app = Task()
